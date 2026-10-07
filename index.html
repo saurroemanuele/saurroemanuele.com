@@ -44,12 +44,41 @@ a:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius
 .kicker{font-size:12px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:var(--accent-on-dark);margin-bottom:18px}
 h1{font-variation-settings:"opsz" 32;font-weight:900;font-size:clamp(46px,7.4vw,84px);line-height:.94;letter-spacing:-.04em}
 .sub{margin-top:22px;font-size:19px;line-height:1.45;color:#D2D3D7;max-width:30ch}
-.form{margin-top:30px;max-width:460px}
+.note{max-width:480px}
 .form iframe{display:block;width:100%;height:152px;border:0;border-radius:14px;background:#fff}
 .note{margin-top:12px;font-size:13.5px;color:var(--night-soft);line-height:1.5}
 .note b{color:#fff;font-weight:600}
 .cover{justify-self:center;width:100%;max-width:360px;transform:rotate(2.5deg);border-radius:6px;overflow:hidden;box-shadow:0 30px 80px rgba(30,107,255,.25),0 0 0 1px var(--night-line)}
 .cover img{display:block;width:100%;height:auto}
+
+
+/* quiz */
+.quiz{margin-top:30px;max-width:480px;background:var(--paper);color:var(--ink);border-radius:18px;padding:20px 20px 22px;box-shadow:0 20px 60px rgba(30,107,255,.18)}
+.bar{height:4px;background:var(--tint);border-radius:99px;overflow:hidden}
+.bar i{display:block;height:100%;width:0;background:var(--accent);transition:width .35s ease}
+.qhead{display:flex;justify-content:space-between;align-items:center;margin:12px 0 4px;font-size:12.5px;color:var(--soft);font-weight:500;letter-spacing:.02em}
+.back{background:none;border:0;font:inherit;color:var(--soft);cursor:pointer;padding:4px 0}
+.back:hover{color:var(--ink)}
+.step h3{font-size:21px;line-height:1.2;font-weight:750;letter-spacing:-.025em;margin:6px 0 14px}
+.opts{display:flex;flex-direction:column;gap:8px}
+.opts button{font:inherit;font-size:16px;font-weight:550;text-align:left;padding:14px 16px;border-radius:12px;border:1.5px solid var(--rule);background:var(--paper);color:var(--ink);cursor:pointer;transition:border-color .15s,background .15s,transform .1s}
+.opts button:hover{border-color:var(--ink)}
+.opts button:active{transform:scale(.99)}
+.opts button.sel{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 8%,#fff)}
+.step label{display:block;font-size:13px;font-weight:600;margin:12px 0 6px}
+.step input[type=text],.step input[type=email]{width:100%;font:inherit;font-size:16px;padding:13px 14px;border:1.5px solid var(--rule);border-radius:12px;background:#fff;color:var(--ink)}
+.step input:focus{outline:none;border-color:var(--accent)}
+.hp{position:absolute;left:-9999px;width:1px;height:1px;opacity:0}
+.consent{display:grid!important;grid-template-columns:22px 1fr;gap:6px;font-weight:400!important;font-size:13px!important;color:var(--soft);line-height:1.45;margin-top:14px!important}
+.consent input{width:17px;height:17px;margin-top:1px;accent-color:var(--accent)}
+.consent a{color:var(--ink)}
+.err{color:#C62828;font-size:13.5px;margin-top:10px}
+.go{display:block;width:100%;text-align:center;margin-top:16px;font:inherit;font-size:16.5px;font-weight:700;padding:15px 18px;border:0;border-radius:12px;background:var(--accent);color:#fff;text-decoration:none;cursor:pointer;transition:filter .15s}
+.go:hover{filter:brightness(1.08)}
+.go[disabled]{opacity:.6;cursor:default}
+.go.big{display:inline-block;width:auto;padding:17px 26px;font-size:18px}
+.done p{color:var(--soft);margin-top:-6px}
+.nl{display:block;text-align:center;margin-top:12px;font-size:14.5px;font-weight:600;color:var(--ink)}
 
 /* proof strip */
 .proof{border-bottom:1px solid var(--rule)}
@@ -102,7 +131,7 @@ footer a{text-decoration:none}footer a:hover{color:#fff}
   .cover{order:-1;max-width:132px;justify-self:start;transform:rotate(-3deg)}
   .hero .wrap{gap:22px}
   .sub{font-size:17px;margin-top:16px}
-  .form{margin-top:22px}
+  .quiz{margin-top:22px;padding:16px 16px 18px}
   .proof .wrap{grid-template-columns:1fr;gap:16px;padding-block:24px}
   .proof .wrap>div{padding:0}
   .proof .wrap>div + div{border-left:0;border-top:1px solid var(--rule);padding-top:16px}
@@ -137,10 +166,78 @@ footer a{text-decoration:none}footer a:hover{color:#fff}
         <div class="kicker">Guida gratuita · 15 pagine</div>
         <h1>Diventa il creator ideale.</h1>
         <p class="sub">Il metodo per far partire i tuoi contenuti e trasformare chi ti guarda in chi ti compra.</p>
-        <div class="form">
-          <iframe src="https://saurroemanuele.substack.com/embed" title="Iscriviti per ricevere la guida" loading="eager" scrolling="no"></iframe>
-          <p class="note">Lascia la tua email: <b>la guida ti arriva subito nella mail di benvenuto.</b> Ricevi anche la mia newsletter, e puoi disiscriverti quando vuoi.</p>
+        <div class="quiz" id="quiz" aria-live="polite">
+          <div class="bar"><i id="barFill"></i></div>
+          <div class="qhead"><span id="stepLabel">Domanda 1 di 5</span><button type="button" class="back" id="backBtn" hidden>← Indietro</button></div>
+
+          <div class="step" data-key="chi_sei">
+            <h3>Cosa descrive meglio cosa fai?</h3>
+            <div class="opts">
+              <button type="button">Creator o streamer</button>
+              <button type="button">Vendo prodotti o servizi</button>
+              <button type="button">Freelance o agenzia</button>
+              <button type="button">Ho un brand o un'azienda</button>
+              <button type="button">Sto iniziando ora</button>
+            </div>
+          </div>
+          <div class="step" data-key="follower" hidden>
+            <h3>Quanti follower hai sul tuo canale principale?</h3>
+            <div class="opts">
+              <button type="button">Meno di 1.000</button>
+              <button type="button">1.000 – 10.000</button>
+              <button type="button">10.000 – 50.000</button>
+              <button type="button">50.000 – 100.000</button>
+              <button type="button">Più di 100.000</button>
+            </div>
+          </div>
+          <div class="step" data-key="guadagni" hidden>
+            <h3>Guadagni già dai tuoi contenuti?</h3>
+            <div class="opts">
+              <button type="button">Non ancora</button>
+              <button type="button">Qualcosa, ma poco</button>
+              <button type="button">Sì, un'entrata costante</button>
+              <button type="button">Sì, è il mio lavoro principale</button>
+            </div>
+          </div>
+          <div class="step" data-key="problema" hidden>
+            <h3>Qual è il tuo problema più grande oggi?</h3>
+            <div class="opts">
+              <button type="button">I miei contenuti non partono</button>
+              <button type="button">Ho views ma non vendo</button>
+              <button type="button">Non so cosa pubblicare</button>
+              <button type="button">Non riesco a essere costante</button>
+              <button type="button">Non ho tempo per montare i video</button>
+            </div>
+          </div>
+          <div class="step" data-key="obiettivo" hidden>
+            <h3>Cosa vuoi ottenere nei prossimi 6 mesi?</h3>
+            <div class="opts">
+              <button type="button">Far crescere il profilo</button>
+              <button type="button">Costruire una community</button>
+              <button type="button">Fare le prime vendite</button>
+              <button type="button">Un personal brand forte</button>
+              <button type="button">Lavorare con i brand</button>
+            </div>
+          </div>
+          <form class="step" id="leadForm" hidden novalidate>
+            <h3>Ultimo passo: dove ti mando la guida?</h3>
+            <label for="leadName">Nome</label>
+            <input id="leadName" name="name" type="text" autocomplete="given-name" placeholder="Il tuo nome" maxlength="80">
+            <label for="leadEmail">Email</label>
+            <input id="leadEmail" name="email" type="email" autocomplete="email" inputmode="email" placeholder="tu@email.com" required maxlength="254">
+            <input class="hp" id="leadWebsite" name="website" type="text" tabindex="-1" autocomplete="off" aria-hidden="true">
+            <label class="consent"><input id="leadConsent" type="checkbox" required> <span>Accetto di ricevere la guida e le mie email. Puoi disiscriverti quando vuoi. <a href="privacy.html" target="_blank" rel="noopener">Privacy</a></span></label>
+            <p class="err" id="leadErr" hidden></p>
+            <button type="submit" class="go" id="leadSubmit">Ricevi la guida gratis →</button>
+          </form>
+          <div class="step done" id="done" hidden>
+            <h3>Fatto. Ecco la tua guida.</h3>
+            <p>Salvala subito: è il tuo punto di partenza.</p>
+            <a class="go" id="dlBtn" href="guida/diventa-il-creator-ideale.pdf" download>Scarica il PDF ↓</a>
+            <a class="nl" id="nlBtn" href="https://saurroemanuele.substack.com/subscribe" target="_blank" rel="noopener">Ricevi anche la newsletter su Substack →</a>
+          </div>
         </div>
+        <p class="note" id="quizNote">Rispondi a 5 domande veloci: mi servono per capire chi sei e mandarti contenuti utili davvero. <b>Ci metti 20 secondi.</b></p>
       </div>
       <div class="cover"><img src="assets/cover.jpg" alt="Copertina della guida Diventa il creator ideale" width="737" height="1039"></div>
     </div>
@@ -195,11 +292,9 @@ footer a{text-decoration:none}footer a:hover{color:#fff}
     <div class="wrap">
       <div>
         <h2>Hai letto. Ora scaricala.</h2>
-        <p class="sub">È gratis. Ti arriva nella mail in meno di un minuto.</p>
+        <p class="sub">È gratis. Cinque domande, la tua email, e la scarichi subito.</p>
       </div>
-      <div class="form" style="margin-top:0">
-        <iframe src="https://saurroemanuele.substack.com/embed" title="Iscriviti per ricevere la guida" loading="lazy" scrolling="no"></iframe>
-      </div>
+      <div><a class="go big" href="#guida">Scarica la guida gratis ↑</a></div>
     </div>
   </section>
 </main>
@@ -215,5 +310,64 @@ footer a{text-decoration:none}footer a:hover{color:#fff}
   </div>
 </footer>
 
+
+<script>
+(function(){
+  var SB_URL="https://jhoidpugjjvvkjccyrxg.supabase.co", SB_KEY="sb_publishable_vam6nGEE5qCrRCXknhoWqQ_GvrpnvzR";
+  var params=new URLSearchParams(location.search);
+  var source=(params.get("src")||params.get("utm_source")||"diretto").slice(0,60);
+  var steps=[].slice.call(document.querySelectorAll("#quiz .step"));
+  var qCount=5, i=0, answers={};
+  var fill=document.getElementById("barFill"), label=document.getElementById("stepLabel"), back=document.getElementById("backBtn");
+  function show(n){
+    steps.forEach(function(el,k){el.hidden=k!==n});
+    i=n;
+    var pct=Math.round(Math.min(n,qCount)/qCount*100);
+    fill.style.width=(n>=steps.length-1?100:pct)+"%";
+    label.textContent=n<qCount?"Domanda "+(n+1)+" di "+qCount:(n===qCount?"Quasi fatto":"Completato");
+    back.hidden=n===0||n>qCount;
+    if(n===qCount){setTimeout(function(){document.getElementById("leadEmail").focus({preventScroll:true})},50)}
+  }
+  steps.slice(0,qCount).forEach(function(step,k){
+    step.querySelectorAll(".opts button").forEach(function(b){
+      b.addEventListener("click",function(){
+        step.querySelectorAll("button").forEach(function(x){x.classList.remove("sel")});
+        b.classList.add("sel");
+        answers[step.dataset.key]=b.textContent.trim();
+        setTimeout(function(){show(k+1)},160);
+      });
+    });
+  });
+  back.addEventListener("click",function(){if(i>0)show(i-1)});
+  var form=document.getElementById("leadForm"), err=document.getElementById("leadErr"), btn=document.getElementById("leadSubmit");
+  form.addEventListener("submit",function(e){
+    e.preventDefault();
+    err.hidden=true;
+    var email=document.getElementById("leadEmail").value.trim();
+    var name=document.getElementById("leadName").value.trim();
+    if(document.getElementById("leadWebsite").value){show(qCount+1);return}
+    if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){err.textContent="Controlla l'email: sembra scritta male.";err.hidden=false;return}
+    if(!document.getElementById("leadConsent").checked){err.textContent="Spunta la casella per ricevere la guida.";err.hidden=false;return}
+    btn.disabled=true;btn.textContent="Un attimo…";
+    var done=function(){
+      document.getElementById("nlBtn").href="https://saurroemanuele.substack.com/subscribe?email="+encodeURIComponent(email);
+      show(qCount+1);
+      var qn=document.getElementById("quizNote");if(qn)qn.hidden=true;
+    };
+    fetch(SB_URL+"/rest/v1/rpc/submit_brand_lead",{
+      method:"POST",
+      headers:{"Content-Type":"application/json","apikey":SB_KEY,"Authorization":"Bearer "+SB_KEY},
+      body:JSON.stringify({p_email:email,p_name:name||null,p_answers:answers,p_source:source,p_magnet:"guida-creator-ideale"})
+    }).then(function(r){
+      if(!r.ok && r.status===400){return r.json().then(function(j){throw new Error((j&&j.message)||"bad")})}
+      done();
+    }).catch(function(ex){
+      if(ex&&/email/.test(ex.message)){btn.disabled=false;btn.textContent="Ricevi la guida gratis →";err.textContent="Controlla l'email: sembra scritta male.";err.hidden=false;return}
+      done();
+    });
+  });
+  show(0);
+})();
+</script>
 </body>
 </html>
