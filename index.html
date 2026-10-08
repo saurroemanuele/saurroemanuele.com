@@ -336,6 +336,18 @@ footer a{text-decoration:none}footer a:hover{color:#fff}
   var source=(params.get("src")||params.get("utm_source")||"diretto").slice(0,60);
   var steps=[].slice.call(document.querySelectorAll("#quiz .step"));
   var qCount=5, i=0, answers={}, LEAD=null;
+  // statistiche anonime del funnel: un id casuale per sessione, niente cookie
+  var SID=null;
+  try{SID=sessionStorage.getItem("brand_sid")}catch(e){}
+  if(!SID){
+    SID=(window.crypto&&crypto.randomUUID)?crypto.randomUUID():"xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g,function(c){var r=Math.random()*16|0;return(c==="x"?r:(r&3|8)).toString(16)});
+    try{sessionStorage.setItem("brand_sid",SID)}catch(e){}
+  }
+  function track(step){
+    try{fetch(SB_URL+"/rest/v1/rpc/track_brand_event",{method:"POST",keepalive:true,headers:{"Content-Type":"application/json","apikey":SB_KEY,"Authorization":"Bearer "+SB_KEY},
+      body:JSON.stringify({p_sid:SID,p_src:source,p_step:step})}).catch(function(){})}catch(e){}
+  }
+  track("view");
   var fill=document.getElementById("barFill"), label=document.getElementById("stepLabel"), back=document.getElementById("backBtn");
   function show(n){
     steps.forEach(function(el,k){el.hidden=k!==n});
@@ -352,6 +364,7 @@ footer a{text-decoration:none}footer a:hover{color:#fff}
         step.querySelectorAll("button").forEach(function(x){x.classList.remove("sel")});
         b.classList.add("sel");
         answers[step.dataset.key]=b.textContent.trim();
+        track("q"+(k+1));
         setTimeout(function(){show(k+1)},160);
       });
     });
@@ -368,6 +381,7 @@ footer a{text-decoration:none}footer a:hover{color:#fff}
     if(!document.getElementById("leadConsent").checked){err.textContent="Spunta la casella per ricevere la guida.";err.hidden=false;return}
     btn.disabled=true;btn.textContent="Un attimo…";
     LEAD={email:email,name:name};
+    track("submit");
     var done=function(){
       document.getElementById("nlBtn").href="https://saurroemanuele.substack.com/subscribe?email="+encodeURIComponent(email);
       show(qCount+1);
@@ -396,6 +410,8 @@ footer a{text-decoration:none}footer a:hover{color:#fff}
         body:JSON.stringify({p_email:LEAD.email,p_name:LEAD.name||null,p_answers:answers,p_source:source,p_magnet:"guida-creator-ideale"})}).catch(function(){});
     });
   });
+  document.getElementById("dlBtn").addEventListener("click",function(){track("download")});
+  document.getElementById("nlBtn").addEventListener("click",function(){track("newsletter")});
   show(0);
 })();
 </script>
