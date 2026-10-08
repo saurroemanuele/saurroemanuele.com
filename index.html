@@ -78,6 +78,11 @@ h1{font-variation-settings:"opsz" 32;font-weight:900;font-size:clamp(46px,7.4vw,
 .go[disabled]{opacity:.6;cursor:default}
 .go.big{display:inline-block;width:auto;padding:17px 26px;font-size:18px}
 .done p{color:var(--soft);margin-top:-6px}
+.budget{margin-top:22px;padding-top:18px;border-top:1px solid var(--rule)}
+.budget h4{font-size:15px;font-weight:700;letter-spacing:-.015em;margin:0 0 4px}
+.budget p{font-size:14px;color:var(--soft);margin:0 0 12px;line-height:1.45}
+.opts.sm button{font-size:14.5px;padding:11px 14px}
+.budget .thanks{margin:12px 0 0;color:var(--ink);font-weight:600}
 .nl{display:block;text-align:center;margin-top:12px;font-size:14.5px;font-weight:600;color:var(--ink)}
 
 /* proof strip */
@@ -191,12 +196,13 @@ footer a{text-decoration:none}footer a:hover{color:#fff}
             </div>
           </div>
           <div class="step" data-key="guadagni" hidden>
-            <h3>Guadagni già dai tuoi contenuti?</h3>
+            <h3>Quanto guadagni oggi al mese dai tuoi contenuti?</h3>
             <div class="opts">
-              <button type="button">Non ancora</button>
-              <button type="button">Qualcosa, ma poco</button>
-              <button type="button">Sì, un'entrata costante</button>
-              <button type="button">Sì, è il mio lavoro principale</button>
+              <button type="button">Ancora niente</button>
+              <button type="button">Meno di 500 €</button>
+              <button type="button">500 – 2.000 €</button>
+              <button type="button">2.000 – 5.000 €</button>
+              <button type="button">Più di 5.000 €</button>
             </div>
           </div>
           <div class="step" data-key="problema" hidden>
@@ -234,6 +240,18 @@ footer a{text-decoration:none}footer a:hover{color:#fff}
             <h3>Fatto. Ecco la tua guida.</h3>
             <p>Salvala subito: è il tuo punto di partenza.</p>
             <a class="go" id="dlBtn" href="guida/diventa-il-creator-ideale.pdf" download>Scarica il PDF ↓</a>
+            <div class="budget" id="budget">
+              <h4>Un'ultima cosa, facoltativa</h4>
+              <p>Se trovassi il percorso giusto per crescere e vendere, quanto saresti disposto a investire?</p>
+              <div class="opts sm">
+                <button type="button">Per ora niente, solo risorse gratis</button>
+                <button type="button">Fino a 100 €</button>
+                <button type="button">100 – 500 €</button>
+                <button type="button">500 – 1.500 €</button>
+                <button type="button">Più di 1.500 €</button>
+              </div>
+              <p class="thanks" id="budgetThanks" hidden>Grazie! Mi aiuta a preparare cose utili davvero.</p>
+            </div>
             <a class="nl" id="nlBtn" href="https://saurroemanuele.substack.com/subscribe" target="_blank" rel="noopener">Ricevi anche la newsletter su Substack →</a>
           </div>
         </div>
@@ -317,7 +335,7 @@ footer a{text-decoration:none}footer a:hover{color:#fff}
   var params=new URLSearchParams(location.search);
   var source=(params.get("src")||params.get("utm_source")||"diretto").slice(0,60);
   var steps=[].slice.call(document.querySelectorAll("#quiz .step"));
-  var qCount=5, i=0, answers={};
+  var qCount=5, i=0, answers={}, LEAD=null;
   var fill=document.getElementById("barFill"), label=document.getElementById("stepLabel"), back=document.getElementById("backBtn");
   function show(n){
     steps.forEach(function(el,k){el.hidden=k!==n});
@@ -349,6 +367,7 @@ footer a{text-decoration:none}footer a:hover{color:#fff}
     if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){err.textContent="Controlla l'email: sembra scritta male.";err.hidden=false;return}
     if(!document.getElementById("leadConsent").checked){err.textContent="Spunta la casella per ricevere la guida.";err.hidden=false;return}
     btn.disabled=true;btn.textContent="Un attimo…";
+    LEAD={email:email,name:name};
     var done=function(){
       document.getElementById("nlBtn").href="https://saurroemanuele.substack.com/subscribe?email="+encodeURIComponent(email);
       show(qCount+1);
@@ -364,6 +383,17 @@ footer a{text-decoration:none}footer a:hover{color:#fff}
     }).catch(function(ex){
       if(ex&&/email/.test(ex.message)){btn.disabled=false;btn.textContent="Ricevi la guida gratis →";err.textContent="Controlla l'email: sembra scritta male.";err.hidden=false;return}
       done();
+    });
+  });
+  document.querySelectorAll("#budget .opts button").forEach(function(b){
+    b.addEventListener("click",function(){
+      if(!LEAD)return;
+      document.querySelectorAll("#budget .opts button").forEach(function(x){x.classList.remove("sel");x.disabled=true});
+      b.classList.add("sel");
+      answers.budget=b.textContent.trim();
+      document.getElementById("budgetThanks").hidden=false;
+      fetch(SB_URL+"/rest/v1/rpc/submit_brand_lead",{method:"POST",headers:{"Content-Type":"application/json","apikey":SB_KEY,"Authorization":"Bearer "+SB_KEY},
+        body:JSON.stringify({p_email:LEAD.email,p_name:LEAD.name||null,p_answers:answers,p_source:source,p_magnet:"guida-creator-ideale"})}).catch(function(){});
     });
   });
   show(0);
